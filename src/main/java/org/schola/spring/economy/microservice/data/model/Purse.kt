@@ -12,6 +12,6 @@ data class Purse(
 
     @Id
     val id: String,
-    val amount: Double
+    var amount: Double
 
 )
