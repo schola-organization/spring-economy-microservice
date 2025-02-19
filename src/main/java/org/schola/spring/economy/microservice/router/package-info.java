@@ -1,0 +1,1 @@
+package org.schola.spring.economy.microservice.router;
