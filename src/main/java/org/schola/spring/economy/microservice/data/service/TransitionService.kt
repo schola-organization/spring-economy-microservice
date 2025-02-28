@@ -1,5 +1,6 @@
 package org.schola.spring.economy.microservice.data.service
 
+import org.schola.spring.economy.microservice.data.model.Purse
 import org.schola.spring.economy.microservice.data.model.TRANSITION_KEY
 import org.schola.spring.economy.microservice.data.model.Transition
 import org.schola.spring.economy.microservice.data.repository.TransitionMongoRepository
@@ -25,5 +26,7 @@ class TransitionService {
 
     @Cacheable(value = [TRANSITION_KEY])
     fun getAll(pageable: org.springframework.data.domain.Pageable): List<Transition> = mongo.findAll(pageable).content
+
+    fun getWithPurse(purse: Purse): List<Transition> = mongo.findByPurse(purse)
 
 }

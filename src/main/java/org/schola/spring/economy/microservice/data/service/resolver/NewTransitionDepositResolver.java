@@ -1,28 +1,26 @@
-package org.schola.spring.economy.microservice.router.controller.resolver;
+package org.schola.spring.economy.microservice.data.service.resolver;
 
 import org.schola.spring.economy.microservice.data.model.Purse;
 import org.schola.spring.economy.microservice.data.model.Transition;
-import org.schola.spring.economy.microservice.data.model.TransitionType;
 import org.schola.spring.economy.microservice.data.service.PurseService;
 import org.schola.spring.economy.microservice.data.service.TransitionService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 @Component
-public class NewTransitionWithdrawResolver {
+public class NewTransitionDepositResolver {
 
     @Autowired
-    private PurseService purse;
+    private PurseService purseService;
 
     @Autowired
-    private TransitionService transition;
+    private TransitionService transitionService;
 
-    public void withdraw(Transition transition) {
+    public void deposit(Transition transition) {
         final Purse purse = transition.getPurse();
-        this.transition.save(transition);
-        final double result = purse.getAmount() - transition.getAmount();
+        this.transitionService.save(transition);
+        final double result = purse.getAmount() + transition.getAmount();
         purse.setAmount(result);
-        this.purse.save(purse);
+        this.purseService.save(purse);
     }
 }

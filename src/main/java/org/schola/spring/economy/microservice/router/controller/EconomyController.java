@@ -1,59 +1,56 @@
 package org.schola.spring.economy.microservice.router.controller;
 
-import org.schola.spring.economy.microservice.data.model.Purse;
-import org.schola.spring.economy.microservice.data.model.Transition;
-import org.schola.spring.economy.microservice.data.model.TransitionBuilder;
-import org.schola.spring.economy.microservice.data.model.TransitionType;
-import org.schola.spring.economy.microservice.data.service.PurseService;
-import org.schola.spring.economy.microservice.data.service.TransitionService;
-import org.schola.spring.economy.microservice.router.controller.resolver.NewTransitionDepositResolver;
-import org.schola.spring.economy.microservice.router.controller.resolver.NewTransitionWithdrawResolver;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.schola.spring.economy.microservice.data.model.*;
+import org.schola.spring.economy.microservice.data.service.EconomyService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.UUID;
+import java.util.List;
 
-@Controller
+@RestController
 @RequestMapping("/api/economy")
 public class EconomyController {
 
-    @Autowired
-    private PurseService purse;
+    private final EconomyService service;
 
-    @Autowired
-    private TransitionService transition;
+    public EconomyController(EconomyService service) {
+        this.service = service;
+    }
 
-    @Autowired
-    private NewTransitionWithdrawResolver withdrawResolver;
-
-    @Autowired
-    private NewTransitionDepositResolver depositResolver;
-
-    @PostMapping("/newPurse")
+    @PostMapping("/purse")
     public ResponseEntity<Purse> newPurse(@RequestBody String identifier) {
-        final Purse purse = new Purse(identifier, 0.0);
+        Purse purse = PurseBuilder.newDefault(identifier).build();
+        service.savePurse(purse);
         return ResponseEntity.ok(purse);
     }
 
-    @PostMapping
-    public ResponseEntity<Transition> newTransition(@RequestBody NewTransitionRequest request) {
+    @PostMapping("/transition")
+    public ResponseEntity<?> newTransition(@RequestBody NewTransitionRequest request) {
+        Purse purse = service.getPurse(request.getTarget());
 
-        final String target = request.getTarget();
-        final TransitionType type = request.getType();
+        Transition transition = TransitionBuilder.fromNewTransitionRequest(request)
+                .purse(purse)
+                .build();
 
-        final Purse purse = this.purse.get(target);
-        final Transition transition = TransitionBuilder.fromNewTransitionRequest(request).purse(purse).build();
-
-        if (type == TransitionType.DEPOSIT) {
-            this.depositResolver.deposit(target, transition);
-        } else {
-            this.withdrawResolver.withdraw(transition);
-        }
-
+        service.saveTransition(transition);
         return ResponseEntity.ok(transition);
+    }
+
+    @GetMapping("/purse/{identifier}")
+    public ResponseEntity<?> getPurse(@PathVariable String identifier) {
+        Purse purse = service.getPurse(identifier);
+        return ResponseEntity.ok(purse);
+    }
+
+    @GetMapping("/transition/{identifier}")
+    public ResponseEntity<?> getTransition(@PathVariable String identifier) {
+        Transition transition = service.getTransition(identifier);
+        return ResponseEntity.ok(transition);
+    }
+
+    @GetMapping("/transition/purse/{identifier}")
+    public ResponseEntity<List<Transition>> getTransitionsByPurse(@PathVariable String identifier) {
+        List<Transition> transitions = service.getTransitionsByPurseIdentifier(identifier);
+        return ResponseEntity.ok(transitions);
     }
 }
