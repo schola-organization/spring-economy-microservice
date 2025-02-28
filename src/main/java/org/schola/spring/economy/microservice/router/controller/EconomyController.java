@@ -25,7 +25,7 @@ public class EconomyController {
     }
 
     @PostMapping("/transition")
-    public ResponseEntity<?> newTransition(@RequestBody NewTransitionRequest request) {
+    public ResponseEntity<Transition> newTransition(@RequestBody NewTransitionRequest request) {
         Purse purse = service.getPurse(request.getTarget());
 
         Transition transition = TransitionBuilder.fromNewTransitionRequest(request)
@@ -37,13 +37,13 @@ public class EconomyController {
     }
 
     @GetMapping("/purse/{identifier}")
-    public ResponseEntity<?> getPurse(@PathVariable String identifier) {
+    public ResponseEntity<Purse> getPurse(@PathVariable String identifier) {
         Purse purse = service.getPurse(identifier);
         return ResponseEntity.ok(purse);
     }
 
     @GetMapping("/transition/{identifier}")
-    public ResponseEntity<?> getTransition(@PathVariable String identifier) {
+    public ResponseEntity<Transition> getTransition(@PathVariable String identifier) {
         Transition transition = service.getTransition(identifier);
         return ResponseEntity.ok(transition);
     }
